@@ -49,3 +49,6 @@ For a live demonstration of GitHub Profile Explorer, you can visit the [Demo Pag
 - Version 0.1
 
 Feel free to explore and customize this project to meet your specific needs! 🌟
+
+![image](https://github.com/kamrullab/GitHub-Profile-Explorer/assets/128359757/586cc0ee-0316-46ee-aa0f-a2f5d0f176f2)
+
