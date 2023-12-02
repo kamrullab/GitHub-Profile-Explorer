@@ -91,14 +91,25 @@
             margin-bottom: 15px;
         }
 
-        /* Monospaced font, code-like styling, green color, and bold for specific elements */
         .code-like {
             font-family: 'Courier New', Courier, monospace;
             color: green;
             font-weight: bold;
         }
 
-        /* Additional styles for the footer */
+        .github-member-since {
+            color: red;
+        }
+
+        .location {
+            font-weight: normal;
+        }
+
+        .location-text {
+            color: green;
+            font-weight: bold;
+        }
+
         #footer {
             display: none;
             text-align: center;
@@ -109,9 +120,9 @@
 
         #showDetailsBtn,
         #showDetailsBtnFooter {
-            margin: 20px auto; /* Set margin-top and margin-bottom to 20px and center horizontally with auto */
+            margin: 20px auto;
             padding: 5px;
-            display: block; /* Ensure it takes full width */
+            display: block;
         }
     </style>
 </head>
@@ -123,39 +134,30 @@
     </div>
 
     <div class="container">
-        <!-- User Profile Section -->
         <div class="row">
             <div class="col-md-6 mx-auto profile-section" id="profileSection">
                 <h2 class="section-title">User Profile Details</h2>
-                <!-- GitHub user information will be added dynamically here -->
             </div>
         </div>
-        <!-- User Repositories Section -->
         <div class="row">
             <div class="col-md-6 mx-auto user-repositories" id="userRepositories">
                 <h2 class="section-title">User Repositories</h2>
-                <!-- User repositories will be added dynamically here -->
             </div>
         </div>
 
-        <!-- Organization Section -->
         <div class="row">
             <div class="col-md-6 mx-auto org-section" id="orgSection">
                 <h2 class="section-title">Organization Details</h2>
-                <!-- GitHub organization information will be added dynamically here -->
             </div>
         </div>
 
-        <!-- Organization Repositories Section -->
         <div class="row">
             <div class="col-md-6 mx-auto org-repositories" id="orgRepositories">
                 <h2 class="section-title">Organization Repositories</h2>
-                <!-- Organization repositories will be added dynamically here -->
             </div>
         </div>
     </div>
 
-    <!-- "Show Details" button and footer -->
     <button id="showDetailsBtn"> 😃 </button>
     <div id="footer">
         <p>
@@ -165,7 +167,6 @@
             <a href="https://m.me/elitekamrul" target="_blank">Facebook</a><br>
             Version 0.1
         </p>
-        <!-- Centered "😃 Show Details" button in the footer -->
         <button id="showDetailsBtnFooter"> 😭 </button>
     </div>
 
@@ -173,62 +174,85 @@
         const username = 'kamrullab';
         const orgName = 'google';
 
-        // GitHub REST API endpoints
-        const userApiUrl = `https://api.github.com/users/${username}`;
-        const orgApiUrl = `https://api.github.com/orgs/${orgName}`;
-        const userReposApiUrl = `https://api.github.com/users/${username}/repos`;
-        const orgReposApiUrl = `https://api.github.com/orgs/${orgName}/repos`;
+        function createRedDateElement(dateString) {
+            const redDateElement = document.createElement('span');
+            redDateElement.textContent = new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            redDateElement.classList.add('github-member-since');
+            return redDateElement;
+        }
 
-        // Fetch GitHub user data, organization data, and repositories from GitHub REST API
+        function createSection(container, data, isUser = true) {
+            const image = document.createElement('img');
+            image.src = data.avatar_url;
+            image.alt = `${isUser ? 'Profile' : 'Organization'} Image`;
+            image.className = 'profile-image img-fluid';
+
+            const nameElement = document.createElement('h1');
+            nameElement.textContent = data.name || data.login;
+            nameElement.classList.add('code-like');
+
+            const bioElement = document.createElement('p');
+            bioElement.textContent = data.bio !== null && data.bio !== undefined ? data.bio : `No ${
+                isUser ? 'user' : 'organization'
+            } bio available.`;
+
+            const locationElement = document.createElement('p');
+            locationElement.innerHTML = `Location: <span class="location-text">${data.location || 'Not specified.'}</span>`;
+
+            const websiteElement = document.createElement('p');
+            websiteElement.innerHTML = `Website: <a href="${data.blog || '#'}">${data.blog || 'Not specified.'}</a>`;
+
+            const createdAtElement = document.createElement('p');
+            createdAtElement.innerHTML = `<span style="color: black; font-weight: normal;">GitHub Member Since:</span> `;
+            createdAtElement.appendChild(createRedDateElement(data.created_at));
+            createdAtElement.classList.add('code-like');
+
+            const linkElement = document.createElement('a');
+            linkElement.href = data.html_url;
+            linkElement.textContent = `Visit GitHub ${isUser ? 'Profile' : 'Organization'}`;
+
+            const detailsContainer = document.createElement('div');
+            detailsContainer.className = 'details-section';
+            detailsContainer.appendChild(image);
+            detailsContainer.appendChild(nameElement);
+            detailsContainer.appendChild(bioElement);
+            detailsContainer.appendChild(locationElement);
+            detailsContainer.appendChild(websiteElement);
+            detailsContainer.appendChild(createdAtElement);
+            detailsContainer.appendChild(linkElement);
+
+            container.appendChild(detailsContainer);
+        }
+
+        function createRepositories(container, repos) {
+            repos.forEach(repo => {
+                const listItem = document.createElement('div');
+                listItem.className = 'repository-list-item';
+                listItem.innerHTML = `
+                    <h3>${repo.name}</h3>
+                    <p>${repo.description || 'No description available.'}</p>
+                    <a href="${repo.html_url}" target="_blank">Visit Repository</a>
+                `;
+                container.appendChild(listItem);
+            });
+        }
+
         Promise.all([
-            fetch(userApiUrl).then(response => response.json()),
-            fetch(orgApiUrl).then(response => response.json()),
-            fetch(userReposApiUrl).then(response => response.json()),
-            fetch(orgReposApiUrl).then(response => response.json())
-        ])
+                fetch(`https://api.github.com/users/${username}`).then(response => response.json()),
+                fetch(`https://api.github.com/orgs/${orgName}`).then(response => response.json()),
+                fetch(`https://api.github.com/users/${username}/repos`).then(response => response.json()),
+                fetch(`https://api.github.com/orgs/${orgName}/repos`).then(response => response.json())
+            ])
             .then(([userData, orgData, userReposData, orgReposData]) => {
-                const profileSection = document.getElementById('profileSection');
-                const orgSection = document.getElementById('orgSection');
-                const userRepositories = document.getElementById('userRepositories');
-                const orgRepositories = document.getElementById('orgRepositories');
-
-                // Add GitHub user profile information
-                const userImage = document.createElement('img');
-                userImage.src = userData.avatar_url;
-                userImage.alt = 'Profile Image';
-                userImage.className = 'profile-image img-fluid';
-
-                const userName = document.createElement('h1');
-                userName.textContent = userData.name || userData.login;
-                userName.classList.add('code-like'); // Apply code-like styling
-
-                const userBio = document.createElement('p');
-                userBio.textContent = userData.bio || 'No bio available.';
-
-                const userLocation = document.createElement('p');
-                userLocation.textContent = `Location: ${userData.location || 'Not specified.'}`;
-
-                const userCreatedAt = document.createElement('p');
-                const createdDate = new Date(userData.created_at);
-                userCreatedAt.textContent = `GitHub Member Since: ${createdDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`;
-                userCreatedAt.classList.add('code-like'); // Apply code-like styling
-
-                const githubLink = document.createElement('a');
-                githubLink.href = userData.html_url;
-                githubLink.textContent = 'Visit GitHub Profile';
-
-                const userDetailsContainer = document.createElement('div');
-                userDetailsContainer.className = 'details-section';
-                userDetailsContainer.appendChild(userImage);
-                userDetailsContainer.appendChild(userName);
-                userDetailsContainer.appendChild(userBio);
-                userDetailsContainer.appendChild(userLocation);
-                userDetailsContainer.appendChild(userCreatedAt);
-                userDetailsContainer.appendChild(githubLink);
-                profileSection.appendChild(userDetailsContainer);
+                createSection(document.getElementById('profileSection'), userData);
+                createRepositories(document.getElementById('userRepositories'), userReposData);
 
                 // Check if organization data is available
-                if (orgData.name) {
+                if (orgData.login) {
                     // Add GitHub organization information
                     const orgImage = document.createElement('img');
                     orgImage.src = orgData.avatar_url;
@@ -240,69 +264,41 @@
                     orgNameElement.classList.add('code-like'); // Apply code-like styling
 
                     const orgDescription = document.createElement('p');
-                    orgDescription.textContent = orgData.description || 'No description available.';
+                    orgDescription.textContent = orgData.description !== null && orgData.description !== undefined ? orgData.description : `No organization bio available.`;
 
-                    const orgWebsite = document.createElement('p');
-                    orgWebsite.innerHTML = `Website: <a href="${orgData.blog || '#'}">${orgData.blog || 'Not specified.'}</a>`;
+                    const orgLocationElement = document.createElement('p');
+                    orgLocationElement.innerHTML = `Location: <span class="location-text">${orgData.location || 'Not specified.'}</span>`;
 
-                    const orgCreatedAt = document.createElement('p');
-                    const orgCreatedDate = new Date(orgData.created_at);
-                    orgCreatedAt.textContent = `GitHub Organization Since: ${orgCreatedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`;
-                    orgCreatedAt.classList.add('code-like'); // Apply code-like styling
+                    const orgContactElement = document.createElement('p');
+                    orgContactElement.innerHTML = `Contact: <a href="mailto:${orgData.email || '#'}">${orgData.email || 'Not specified.'}</a>`;
+
+                    const orgMemberSinceElement = document.createElement('p');
+                    const orgMemberSinceDate = new Date(orgData.created_at);
+                    orgMemberSinceElement.innerHTML = `<span style="color: black; font-weight: normal;">GitHub Member Since:</span> <span class="github-member-since">${orgMemberSinceDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>`;
+                    orgMemberSinceElement.classList.add('code-like'); // Apply code-like styling
 
                     const orgDetailsContainer = document.createElement('div');
                     orgDetailsContainer.className = 'details-section';
                     orgDetailsContainer.appendChild(orgImage);
                     orgDetailsContainer.appendChild(orgNameElement);
                     orgDetailsContainer.appendChild(orgDescription);
-                    orgDetailsContainer.appendChild(orgWebsite);
-                    orgDetailsContainer.appendChild(orgCreatedAt);
+                    orgDetailsContainer.appendChild(orgLocationElement);
+                    orgDetailsContainer.appendChild(orgContactElement);
+                    orgDetailsContainer.appendChild(orgMemberSinceElement);
                     orgSection.appendChild(orgDetailsContainer);
-
-                    // Add "Visit GitHub Organization" link
-                    const orgLink = document.createElement('a');
-                    orgLink.href = orgData.html_url;
-                    orgLink.textContent = 'Visit GitHub Organization';
-                    orgDetailsContainer.appendChild(orgLink);
                 }
 
-                // Dynamically add user repositories to the list
-                userReposData.forEach(repo => {
-                    const listItem = document.createElement('div');
-                    listItem.className = 'repository-list-item';
-                    listItem.innerHTML = `
-                        <h3>${repo.name}</h3>
-                        <p>${repo.description || 'No description available.'}</p>
-                        <a href="${repo.html_url}" target="_blank">Visit Repository</a>
-                    `;
-                    userRepositories.appendChild(listItem);
-                });
-
-                // Dynamically add organization repositories to the list
-                orgReposData.forEach(repo => {
-                    const listItem = document.createElement('div');
-                    listItem.className = 'repository-list-item';
-                    listItem.innerHTML = `
-                        <h3>${repo.name}</h3>
-                        <p>${repo.description || 'No description available.'}</p>
-                        <a href="${repo.html_url}" target="_blank">Visit Repository</a>
-                    `;
-                    orgRepositories.appendChild(listItem);
-                });
+                createRepositories(document.getElementById('orgRepositories'), orgReposData);
             })
             .catch(error => console.error('Error fetching data:', error));
 
-        // Show/hide footer when the button is clicked
         document.getElementById('showDetailsBtn').addEventListener('click', function () {
             const footer = document.getElementById('footer');
-            // Toggle the visibility of the footer
             footer.style.display = (footer.style.display === 'none' || footer.style.display === '') ? 'block' : 'none';
         });
 
-        // Show/hide footer when the button in the footer is clicked
         document.getElementById('showDetailsBtnFooter').addEventListener('click', function () {
             const footer = document.getElementById('footer');
-            // Toggle the visibility of the footer
             footer.style.display = (footer.style.display === 'none' || footer.style.display === '') ? 'block' : 'none';
         });
     </script>
