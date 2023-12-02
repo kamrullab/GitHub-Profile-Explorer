@@ -2,6 +2,11 @@
 
 GitHub Profile Explorer is a web application that allows users to explore GitHub profiles and repositories easily. It provides a visually appealing and user-friendly interface to view details about a GitHub user, including their profile information, repositories, and organization details. The project is built using HTML, CSS, and JavaScript, with Bootstrap for styling.
 
+## Demo 🎥
+
+For a live demonstration of GitHub Profile Explorer, you can visit the [Demo Page](https://kamrullab.github.io/GitHub-Profile-Explorer/).
+
+
 ## Features ✨
 
 1. **User Profile Details:** Displays information about a GitHub user, including their profile picture, name, bio, location, GitHub member since, and a link to visit their GitHub profile.
